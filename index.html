@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerLens | AI Career Strategy</title>
+    <!-- Modern Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div id="background-glow">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+    </div>
+    
+    <nav class="navbar glass-effect">
+        <div class="logo">
+            <i class="fa-solid fa-magnifying-glass-chart text-gradient"></i> <span class="text-gradient">CareerLens</span>
+        </div>
+        <div class="nav-links">
+            <button onclick="window.app.navigate('landing')" class="nav-btn">Home</button>
+            <button onclick="window.app.navigate('features')" class="nav-btn">Features</button>
+            <button onclick="window.app.navigate('reviews')" class="nav-btn">Reviews</button>
+            <button onclick="window.app.navigate('about')" class="nav-btn">About</button>
+            <button onclick="window.app.navigate('contact')" class="nav-btn">Contact</button>
+            <button id="nav-auth-btn" class="btn" style="padding: 0.4rem 1.1rem; font-size: 0.9rem;" onclick="window.app.navigate('auth')">Sign In</button>
+        </div>
+    </nav>
+
+    <main id="app-container" class="container">
+        <!-- Views are injected here -->
+    </main>
+
+    <footer style="text-align: center; padding: 3rem 1rem; margin-top: 4rem; border-top: 1px solid rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.6); font-size: 0.9rem;">
+        <p>&copy; 2026 CareerLens. All rights reserved.</p>
+        <p style="margin-top: 1rem;">
+            <a href="javascript:void(0)" onclick="alert('Privacy Policy coming soon!')" style="color: var(--accent); text-decoration: none; margin: 0 10px;">Privacy Policy</a> | 
+            <a href="javascript:void(0)" onclick="alert('Terms of Service coming soon!')" style="color: var(--accent); text-decoration: none; margin: 0 10px;">Terms of Service</a> | 
+            <a href="javascript:void(0)" onclick="alert('Cookie Policy coming soon!')" style="color: var(--accent); text-decoration: none; margin: 0 10px;">Cookie Policy</a>
+        </p>
+    </footer>
+
+    <!-- Firebase SDK (ES Module — exposes helpers on window.firebase) -->
+    <script type="module">
+        import {
+            auth, db,
+            loginWithGoogle, loginWithEmail, registerWithEmail,
+            logout, onAuthChange,
+            getUserProfile, saveCareerProfile, saveSimulation, getUserSimulations
+        } from './firebase-config.js';
+
+        // Expose to global scope so non-module scripts can use them
+        window.firebase = { auth, db };
+        window.firebaseHelpers = {
+            loginWithGoogle, loginWithEmail, registerWithEmail,
+            logout, onAuthChange,
+            getUserProfile, saveCareerProfile, saveSimulation, getUserSimulations
+        };
+
+        // Listen for auth state and keep app.state.user in sync
+        onAuthChange(async (user) => {
+            if (user) {
+                const profile = await getUserProfile(user.uid);
+                window.app.state.user = {
+                    uid: user.uid,
+                    firstName: (user.displayName || user.email.split('@')[0]).split(' ')[0],
+                    lastName: (user.displayName || '').split(' ').slice(1).join(' '),
+                    email: user.email,
+                    photoURL: user.photoURL,
+                    firestoreProfile: profile
+                };
+            } else {
+                window.app.state.user = null;
+            }
+
+            // Re-render nav/auth state if app is ready
+            if (window.app && window.app.__authReady) {
+                window.app.__authReady(!!user);
+            }
+        });
+    </script>
+
+    <!-- Core App Logic -->
+    <script src="app.js"></script>
+    <script src="data/jobs.js"></script>
+
+    <!-- Components -->
+    <script src="components/auth.js"></script>
+    <script src="components/landing.js"></script>
+    <script src="components/profiling.js"></script>
+    <script src="components/dashboard.js"></script>
+    <script src="components/simulation.js"></script>
+    <script src="components/comparison.js"></script>
+    <script src="components/roadmap.js"></script>
+</body>
+</html>
